@@ -213,3 +213,4 @@ def licytacja(N, S, zal, dealer): # zal jak na bbo
 
 print(licytacja("SAT98HAK8DQJ98CK4",'SJ987HQ76DA3CQJ75', '0', 3)[:8])
 #dobra zmiana
+print("zmianaXDsadasd")
