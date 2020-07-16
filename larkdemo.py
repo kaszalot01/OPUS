@@ -19,36 +19,39 @@ tree_grammar = r"""
     branch: test ":" body
     body: bid_stmt | _NL _INDENT stmt+ _DEDENT
 
-    ?atom: NUMBER               -> number
-        | "(" test ")"  
-        | "(" sum ")"
+    
+    ?test: expr cmp_op expr        -> cmp_test
+        | test logic_op test       -> logic_test
+        | "(" test ")"
 
-    ?val: suit                  -> suit_cards
+    ?expr: product 
+        | expr "+" product      -> add
+        | expr "-" product      -> sub
+
+    ?atom: NUMBER
+        | "(" expr ")"
+        | suit                  -> suit_cards
         | suit "points"         -> suit_points
         | "$" NAME              -> var
-        | atom
+        | "-" atom              -> neg
 
-    ?sum: product
-        | sum "+" product
-        | sum "-" product
-
-    ?product: val
-        | product "*" val      -> mul
-        | product "/" val      -> div
+    ?product: atom
+        | product "*" atom      -> mul
+        | product "/" atom      -> div
 
 
-    test: cmp_stmt              -> compare
-        | "not" test            -> neg
-        | test logic_op test    -> logic
-
-    ?cmp_stmt: sum cmp_op sum
     !cmp_op: (">" | ">=" | "==" | "<=" | "<")
 
     !logic_op: "or" | "and"
 
     !bid_stmt: "bid" _BID_NUM suit _NL
 
-    !suit: "♣" | "♦" | "♥" | "♠" | "C" | "D" | "H" | "S" | "NT" | "@"
+    ?suit: ("♣" | "C")            -> clubs
+        | ("♦" | "D")             -> diamonds
+        | ("♥" | "H")             -> hearts
+        | ("♠" | "S")             -> spades
+        | "NT"                    -> no_trump
+        | "@"                     -> all
 
     %import common.CNAME -> NAME
     %import common.NUMBER
@@ -69,7 +72,7 @@ class TreeIndenter(Indenter):
     DEDENT_type = '_DEDENT'
     tab_len = 4
 
-parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter())
+parser = Lark(tree_grammar, parser='lalr', debug=True, postlex=TreeIndenter())
 # parser = Lark(tree_grammar, postlex=TreeIndenter())
 
 test_tree = """
