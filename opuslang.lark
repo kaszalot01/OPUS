@@ -1,0 +1,49 @@
+?start: _NL+ stmt+ 
+
+?stmt: bid_stmt | branch
+
+branch: test ":" body
+body: bid_stmt | _NL _INDENT stmt+ _DEDENT
+
+
+?test: expr cmp_op expr        -> cmp_test
+    | test logic_op test       -> logic_test
+    | "(" test ")"
+
+?expr: product 
+    | expr "+" product      -> add
+    | expr "-" product      -> sub
+
+?atom: NUMBER
+    | "(" expr ")"
+    | suit                  -> suit_cards
+    | suit "points"         -> suit_points
+    | "$" NAME              -> var
+    | "-" atom              -> neg
+
+?product: atom
+    | product "*" atom      -> mul
+    | product "/" atom      -> div
+
+
+!cmp_op: (">" | ">=" | "==" | "<=" | "<")
+
+!logic_op: "or" | "and"
+
+!bid_stmt: "bid" _BID_NUM suit _NL
+
+?suit: ("♣" | "C")            -> clubs
+    | ("♦" | "D")             -> diamonds
+    | ("♥" | "H")             -> hearts
+    | ("♠" | "S")             -> spades
+    | "NT"                    -> no_trump
+    | "@"                     -> all
+
+%import common.CNAME -> NAME
+%import common.NUMBER
+%import common.WS_INLINE
+%declare _INDENT _DEDENT
+%ignore WS_INLINE
+
+_BID_NUM: /[1-7]/
+_NL: /(\r?\n[\t ]*)+/
