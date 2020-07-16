@@ -1,5 +1,6 @@
 from lark import Lark
-from larkdemo import TreeIndenter
+from opusparser import TreeIndenter
+import pytest
 
 parser = Lark.open("opuslang.lark", parser='lalr', debug=True, postlex=TreeIndenter())
 
@@ -26,3 +27,20 @@ def test_basic_grammar():
 """
     _ = parser.parse(test_tree)
 
+
+def test_bid_after_branch():
+    test_tree = \
+"""
+@points > 21:
+    bid 2♦
+
+    ♥ >= 4 and @points < 15:
+        bid 2♠
+
+    bid 2H
+    @points >= 15 and @points <= 17 and ♠ >= 2 and ♥ >= 2:
+        bid 4♣
+
+"""
+    with pytest.raises(Exception):
+        _ = parser.parse(test_tree)

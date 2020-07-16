@@ -3,7 +3,7 @@
 ?stmt: bid_stmt | branch
 
 branch: test ":" body
-body: bid_stmt | _NL _INDENT stmt+ _DEDENT
+body: bid_stmt | _NL _INDENT bid_stmt* branch* _DEDENT
 
 
 ?test: expr cmp_op expr        -> cmp_test
