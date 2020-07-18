@@ -8,7 +8,10 @@ body: bid_stmt | _NL _INDENT bid_stmt* branch* _DEDENT
 
 ?test: expr cmp_op expr        -> cmp_test
     | test logic_op test       -> logic_test
+    | expr
     | "(" test ")"
+    | expr "in" expr           -> in_test
+    | "else"                   -> else
 
 ?expr: product 
     | expr "+" product      -> add
@@ -20,18 +23,22 @@ body: bid_stmt | _NL _INDENT bid_stmt* branch* _DEDENT
     | suit "points"         -> suit_points
     | "$" NAME              -> var
     | "-" atom              -> neg
+    | "not" test            -> logic_neg
+    | card_list             -> card_list
 
 ?product: atom
     | product "*" atom      -> mul
     | product "/" atom      -> div
 
 
-!cmp_op: (">" | ">=" | "==" | "<=" | "<")
+!cmp_op: (">" | ">=" | "==" | "!=" | "<=" | "<")
 
 !logic_op: "or" | "and"
 
 bid_stmt: "bid" _bid_num suit _NL+
     | "pass" _NL+
+
+?card_list: /[AKQJT98765432]+/
 
 !suit: ("♣" | "C")
     | ("♦" | "D")

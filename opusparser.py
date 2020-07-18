@@ -16,7 +16,7 @@ test_tree = """
 D == 2:
     pass
     
-S == 2:
+AK in S:
     bid 2S
 
 """

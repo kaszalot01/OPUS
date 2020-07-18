@@ -51,20 +51,20 @@ class Hand:
 
         by_color = split_by_predicate(card_string, lambda c: c in("CDHS"))
 
-        self.clubs = by_color[0]
-        self.clubs_count = len(by_color[0])
+        self.clubs = by_color[3]
+        self.clubs_count = len(by_color[3])
         self.clubs_points = count_hcp(self.clubs)
 
-        self.diamonds = by_color[1]
-        self.diamonds_count = len(by_color[1])
+        self.diamonds = by_color[2]
+        self.diamonds_count = len(by_color[2])
         self.diamonds_points = count_hcp(self.diamonds)
 
-        self.hearts = by_color[2]
-        self.hearts_count = len(by_color[2])
+        self.hearts = by_color[1]
+        self.hearts_count = len(by_color[1])
         self.hearts_points = count_hcp(self.hearts)
 
-        self.spades = by_color[3]
-        self.spades_count = len(by_color[3])
+        self.spades = by_color[0]
+        self.spades_count = len(by_color[0])
         self.spades_points = count_hcp(self.spades)
 
         self.env = Env()

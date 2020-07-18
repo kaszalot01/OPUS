@@ -7,7 +7,12 @@ from enum import Enum, auto
 from lark import Transformer, v_args
 from functools import partial
 from opusexecute import Hand, Env
+from itertools import chain
 
+
+def one_shot_gen(*args):
+    for i in args:
+        yield i
 
 class Suit:
     pretty_to_ugly = {
@@ -46,9 +51,15 @@ class Suit:
 
 @dataclass
 class Branch:
-    test: Expr
+    test: BinaryExpr
     bids: List[BidStatement]
     children: List[Branch]
+
+    def children_iterator(self):
+        return chain(
+            self.test.children_iterator(),
+            *[b.children_iterator() for b in self.bids],
+            *[b.children_iterator() for b in self.children])
 
 
 @dataclass
@@ -58,10 +69,9 @@ class System:
     @classmethod
     def parse_system(cls, opuslang_str):
         tree = parser.parse(opuslang_str)
-        print(tree.pretty())
         post_proc = IntermediateTransformer().transform(tree)
-        print(post_proc)
-        print("oto", repr(post_proc))
+        if not isinstance(post_proc, list):
+            post_proc = [post_proc]
         return cls(post_proc)
 
     @classmethod
@@ -79,6 +89,9 @@ class BidStatement:
         if self.level is None and self.suit is None:
             return "pass"
         return f"{self.level}{self.suit}"
+
+    def children_iterator(self):
+        return one_shot_gen(self)
     
 
 class ExprType(Enum):
@@ -87,10 +100,25 @@ class ExprType(Enum):
 
 
 @dataclass
-class Expr:
-    lhs: Union[Expr, Atom]
+class InExpr:
+    element: Union[InExpr, BinaryExpr, Atom]
+    container: Atom
+
+    def eval(self, env):
+        assert self.container.type == AtomType.SUIT_CARDS
+        element_val = self.element.eval(env)
+        container_eval = env.cards[self.container.child.ugly_repr()]
+        return set(element_val).issubset(set(container_eval))
+
+    def children_iterator(self):
+        return chain(self.element.children_iterator(), self.container.children_iterator())
+
+
+@dataclass
+class BinaryExpr:
+    lhs: Union[InExpr, BinaryExpr, Atom]
     op: str
-    rhs: Union[Expr, Atom]
+    rhs: Union[InExpr, BinaryExpr, Atom]
 
     def eval(self, env):
         lhs_val = self.lhs.eval(env)
@@ -99,6 +127,9 @@ class Expr:
         eval_str = f"{lhs_val} {op} {rhs_val}"
         return eval(eval_str)
 
+    def children_iterator(self):
+        return chain(self.lhs.children_iterator(), self.rhs.children_iterator())
+
 
 class AtomType(Enum):
     LITERAL       = 1
@@ -106,13 +137,16 @@ class AtomType(Enum):
     SUIT_POINTS   = 3
     VAR           = 4
     NEG           = 5
+    CARD_LIST     = 6
+    LOGIC_NEG     = 7
 
     TYPE_DICT = {
             "num": 1,
             "suit_cards": 2,
             "suit_points": 3,
             "var": 4, 
-            "neg": 5
+            "neg": 5,
+            "card_list": 6,
     }
 
 
@@ -122,16 +156,39 @@ class Atom:
         self.type = AtomType[atom_type]
 
     def eval(self, env: Env):
+
         if self.type is AtomType.LITERAL:
             return float(self.child)
+
         elif self.type is AtomType.SUIT_CARDS:
             return env.counts[self.child.ugly_repr()]
+
         elif self.type is AtomType.SUIT_POINTS:
             return env.points[self.child.ugly_repr()]
+
         elif self.type is AtomType.VAR:
             return env.vars[str(self.child)]
+
         elif self.type is AtomType.NEG:
             return -self.child.eval(env)
+
+        elif self.type is AtomType.CARD_LIST:
+            return str(self.child)
+
+        elif self.type is AtomType.LOGIC_NEG:
+            child_val = self.child.eval(env)
+            assert isinstance(child_val, bool)
+            return not child_val
+
+    def __repr__(self):
+        return f"Atom(atom_type={self.type}, child={self.child})"
+
+    def children_iterator(self):
+        return one_shot_gen(self)
+
+
+def binary_arithmetic(op, lhs, rhs):
+    return BinaryExpr(lhs, op, rhs)
 
 
 @v_args(inline=True)
@@ -144,6 +201,8 @@ class IntermediateTransformer(Transformer):
     var = partial(Atom, "VAR")
     neg = partial(Atom, "NEG")
     num = partial(Atom, "LITERAL")
+    card_list = partial(Atom, "CARD_LIST")
+    logic_neg = partial(Atom, "LOGIC_NEG")
 
     bid_stmt = BidStatement
     suit = Suit
@@ -165,9 +224,15 @@ class IntermediateTransformer(Transformer):
         return bids, branches
 
     def logic_test(self, lhs, op, rhs):
-        return Expr(lhs, op, rhs)
+        return BinaryExpr(lhs, op, rhs)
+
+    add = partial(binary_arithmetic, "+")
+    sub = partial(binary_arithmetic, "-")
+    mul = partial(binary_arithmetic, "*")
+    div = partial(binary_arithmetic, "/")
 
     cmp_test = logic_test
+    in_test = InExpr
     cmp_op = str
     logic_op = str
 
@@ -204,7 +269,7 @@ class Executor:
 
 
 test_system = """
-@points >= 12:
+AT in S:
     S >= 5:
         pass
 

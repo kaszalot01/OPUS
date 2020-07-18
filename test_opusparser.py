@@ -29,14 +29,14 @@ def test_basic_grammar():
 
 def test_contains_operator():
     test_tree = \
-        """
-        @points > 21:
-            bid 2♦
-        
-            ♥ >= 4 and AK in ♥:
-                bid 2♠
-        
-        """
+"""
+@points > 21:
+    bid 2♦
+
+    ♥ >= 4 and AK in ♥:
+        bid 2♠
+
+"""
     _ = parser.parse(test_tree)
 
 def test_bid_after_branch():
