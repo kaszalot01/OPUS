@@ -13,7 +13,7 @@ def test_basic_grammar():
     ♥ >= 4 and @points < 15:
         bid 2♠
     @points >= 15 and @points <= 17 and ♠ >= 2 and ♥ >= 2:
-        bid 4♣
+        pass
 
     $balance == 1 or $balance == 2:
         @points >= 15 and @points <= 17:
@@ -27,6 +27,17 @@ def test_basic_grammar():
 """
     _ = parser.parse(test_tree)
 
+def test_contains_operator():
+    test_tree = \
+        """
+        @points > 21:
+            bid 2♦
+        
+            ♥ >= 4 and AK in ♥:
+                bid 2♠
+        
+        """
+    _ = parser.parse(test_tree)
 
 def test_bid_after_branch():
     test_tree = \
