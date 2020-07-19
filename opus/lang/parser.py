@@ -1,6 +1,9 @@
 from lark import Lark
 from lark.indenter import Indenter
 
+from pathlib import Path
+
+
 class TreeIndenter(Indenter):
     NL_type = '_NL'
     OPEN_PAREN_types = ['LPAR', 'LSQB', 'LBRACE']
@@ -9,25 +12,15 @@ class TreeIndenter(Indenter):
     DEDENT_type = '_DEDENT'
     tab_len = 4
 
-parser = Lark.open("opuslang.lark", parser='lalr', debug=True, postlex=TreeIndenter())
-# AK in ♦:
 
-test_tree = """
-D == 2:
-    pass
-    
-AK in S:
-    bid 2S
+_current_path = Path(__file__).resolve()
+print(_current_path)
+_grammar_fname = _current_path.parent.joinpath("opuslang.lark")
+print(_grammar_fname)
+parser = Lark.open(_grammar_fname, parser='lalr', debug=True, postlex=TreeIndenter())
 
-"""
-
-atom_test = " X 5 * Cpoints"
-
-def test():
-    print(parser.parse(test_tree).pretty())
-    print(parser.parse(test_tree))
 
 if __name__ == '__main__':
-    test()
+    pass
 
 

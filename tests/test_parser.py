@@ -1,8 +1,7 @@
 from lark import Lark
-from opusparser import TreeIndenter
+from opus.lang.parser import parser
 import pytest
 
-parser = Lark.open("opuslang.lark", parser='lalr', debug=True, postlex=TreeIndenter())
 
 def test_basic_grammar():
     test_tree = \

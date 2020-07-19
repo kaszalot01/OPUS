@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from opusparser import parser
+from opus.lang.parser import parser
 from typing import List, Union, Optional
 from dataclasses import dataclass
 from enum import Enum, auto
 from lark import Transformer, v_args
 from functools import partial
-from opusexecute import Hand, Env
+from opus.card_utils.hand import Hand, Env, HandAnalyzer
 from itertools import chain
 
 
@@ -70,7 +70,7 @@ class System:
     def parse_system(cls, opuslang_str):
         tree = parser.parse(opuslang_str)
         post_proc = IntermediateTransformer().transform(tree)
-        if not isinstance(post_proc, list):
+        if not hasattr(post_proc, "__iter__"):
             post_proc = [post_proc]
         return cls(post_proc)
 
@@ -283,7 +283,7 @@ AT in S:
 """
 
 
-class BalanceAnalyzer:
+class BalanceAnalyzer(HandAnalyzer):
 
     @staticmethod
     def analyze(hand: Hand):

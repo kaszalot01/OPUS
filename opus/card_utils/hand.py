@@ -1,6 +1,7 @@
-from lark import Transformer, v_args
+from __future__ import annotations
 from dataclasses import dataclass, field
-from opusparser import parser
+
+from typing import Tuple
 
 POINT_DICT = {
     "A": 4,
@@ -46,10 +47,16 @@ class Env:
     points: dict = field(default_factory=dict)
 
 
-class Hand:
-    def __init__(self, card_string, analyzers=[]):
+class HandAnalyzer:
 
-        by_color = split_by_predicate(card_string, lambda c: c in("CDHS"))
+    def analyze(self, hand: Hand):
+        return {}
+
+
+class Hand:
+    def __init__(self, card_string, analyzers: Tuple[HandAnalyzer] = ()):
+
+        by_color = split_by_predicate(card_string, lambda c: c in "CDHS")
 
         self.clubs = by_color[3]
         self.clubs_count = len(by_color[3])
@@ -93,40 +100,4 @@ class Hand:
             "H": self.hearts,
             "S": self.spades,
         }
-
-
-
-
-
-test_system = """
-@points >= 12 and @points <=15:
-    S >= 5:
-        bid 1S
-
-        @points >= 12:
-            bid 4S
-    H >= 5:
-        bid 1H
-
-        @points >= 12:
-            bid 4H
-
-    D >= 5:
-        bid 1D
-
-        @points >= 12:
-            bid 5D
-
-    C >= 5:
-        bid 1C
-
-        @points >= 12:
-            bid 5C
-"""
-
-if __name__ == '__main__':
-
-    tree = parser.parse(test_system)
-    print(tree.pretty())
-    print(tree)
 
