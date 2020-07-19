@@ -237,6 +237,9 @@ class IntermediateTransformer(Transformer):
     logic_op = str
 
 
+class SystemIncompleteException(Exception):
+    pass
+
 class Executor:
 
     def __init__(self, system: System, hand0: Hand, hand1: Hand):
@@ -258,7 +261,7 @@ class Executor:
                     self.bid(bid)
                 self.execute(branch.children)
                 return
-        raise Exception("System incomplete")
+        raise SystemIncompleteException("System incomplete")
 
     def bid(self, bid_statement: BidStatement):
         self.result += f"{bid_statement} - "
