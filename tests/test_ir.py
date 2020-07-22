@@ -12,8 +12,13 @@ def test_blas_parses():
 
 
 def test_blas_executes():
+    import pathlib
 
-    system = System.load('./blas.ol')
+    here = pathlib.Path(__file__)
+    root = here.parent.parent
+    system_fname = root / 'blas.ol'
+
+    system = System.load(system_fname)
     h0 = Hand("SAT567HKQD432CA43", analyzers=(BalanceAnalyzer(),))
     h1 = Hand("SQJ8HAT89DAK8CAJ2", analyzers=(BalanceAnalyzer(),))
     h0.env.vars['vulnerable'] = False

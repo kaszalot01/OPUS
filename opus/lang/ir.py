@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from opus.lang.parser import parser
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 from dataclasses import dataclass
 from enum import Enum, auto
 from lark import Transformer, v_args
@@ -13,6 +13,7 @@ from itertools import chain
 def one_shot_gen(*args):
     for i in args:
         yield i
+
 
 class Suit:
     pretty_to_ugly = {
@@ -26,7 +27,7 @@ class Suit:
 
     ugly_to_pretty = {v: k for k, v in pretty_to_ugly.items()}
 
-    def __init__(self, symbol):
+    def __init__(self, meta, symbol):
         symbol = str(symbol)  # convert lark Token to str
         if symbol in self.pretty_to_ugly:
             symbol = self.pretty_to_ugly[symbol]
@@ -51,6 +52,7 @@ class Suit:
 
 @dataclass
 class Branch:
+    meta: Optional[Any]
     test: BinaryExpr
     bids: List[BidStatement]
     children: List[Branch]
@@ -82,6 +84,7 @@ class System:
 
 @dataclass
 class BidStatement:
+    meta: Optional[Any] = None
     level: Optional[int] = None
     suit: Optional[Suit] = None
 
@@ -101,6 +104,7 @@ class ExprType(Enum):
 
 @dataclass
 class InExpr:
+    meta: Optional[Any]
     element: Union[InExpr, BinaryExpr, Atom]
     container: Atom
 
@@ -116,6 +120,7 @@ class InExpr:
 
 @dataclass
 class BinaryExpr:
+    meta: Optional[Any]
     lhs: Union[InExpr, BinaryExpr, Atom]
     op: str
     rhs: Union[InExpr, BinaryExpr, Atom]
@@ -151,7 +156,8 @@ class AtomType(Enum):
 
 
 class Atom:
-    def __init__(self, atom_type, child):
+    def __init__(self, atom_type, meta, child):
+        self.meta = meta
         self.child = child
         self.type = AtomType[atom_type]
 
@@ -187,11 +193,11 @@ class Atom:
         return one_shot_gen(self)
 
 
-def binary_arithmetic(op, lhs, rhs):
-    return BinaryExpr(lhs, op, rhs)
+def binary_arithmetic(op, meta, lhs, rhs):
+    return BinaryExpr(meta, lhs, op, rhs)
 
 
-@v_args(inline=True)
+@v_args(inline=True, meta=True)
 class IntermediateTransformer(Transformer):
 
     atom = Atom
@@ -207,13 +213,13 @@ class IntermediateTransformer(Transformer):
     bid_stmt = BidStatement
     suit = Suit
 
-    def start(self, *children):
+    def start(self, _meta, *children):
         return children
 
-    def branch(self, test, bids_and_branches):
-        return Branch(test, bids_and_branches[0], bids_and_branches[1])
+    def branch(self, meta, test, bids_and_branches):
+        return Branch(meta, test, bids_and_branches[0], bids_and_branches[1])
 
-    def body(self, *children):
+    def body(self, _meta, *children):
         bids = []
         branches = []
         for c in children:
@@ -223,8 +229,8 @@ class IntermediateTransformer(Transformer):
                 branches.append(c)
         return bids, branches
 
-    def logic_test(self, lhs, op, rhs):
-        return BinaryExpr(lhs, op, rhs)
+    def logic_test(self, meta, lhs, op, rhs):
+        return BinaryExpr(meta, lhs, op, rhs)
 
     add = partial(binary_arithmetic, "+")
     sub = partial(binary_arithmetic, "-")
@@ -233,12 +239,13 @@ class IntermediateTransformer(Transformer):
 
     cmp_test = logic_test
     in_test = InExpr
-    cmp_op = str
-    logic_op = str
+    cmp_op = lambda _1, _2, s: str(s)
+    logic_op = lambda _1, _2, s: str(s)
 
 
 class SystemIncompleteException(Exception):
     pass
+
 
 class Executor:
 
@@ -299,7 +306,7 @@ class BalanceAnalyzer(HandAnalyzer):
 
 
 if __name__ == '__main__':
-    system = System.parse_system(test_system)
+    system = System.load("./blas.ol")
     h0 = Hand("SAT567HKQD432CA43", analyzers=[BalanceAnalyzer])
     print(h0.env.points["@"])
     print(h0.env.vars['balance'])

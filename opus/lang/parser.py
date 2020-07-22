@@ -17,7 +17,7 @@ _current_path = Path(__file__).resolve()
 print(_current_path)
 _grammar_fname = _current_path.parent.joinpath("opuslang.lark")
 print(_grammar_fname)
-parser = Lark.open(_grammar_fname, parser='lalr', debug=True, postlex=TreeIndenter())
+parser = Lark.open(_grammar_fname, parser='lalr', debug=True, postlex=TreeIndenter(), propagate_positions=True)
 
 
 if __name__ == '__main__':
