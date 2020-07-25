@@ -42,3 +42,29 @@ def test_ir_equality():
     system2 = System.load(system_fname)
 
     assert system1 == system2
+
+
+def test_comments():
+    without_comment = \
+"""
+@points > 21:
+    bid 2♦
+    ♥ >= 4 and AK in ♥:
+        bid 2♠
+
+"""
+
+    with_comment = \
+"""
+# top level
+@points > 21:
+    bid 2♦
+    # correctly indented
+
+    ♥ >= 4 and AK in ♥:
+        bid 2♠
+
+"""
+    s_comment = System.parse_system(with_comment)
+    s_no_comment = (System.parse_system(without_comment))
+    assert s_comment == s_no_comment
