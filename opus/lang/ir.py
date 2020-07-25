@@ -49,6 +49,9 @@ class Suit:
     def __hash__(self):
         return hash(str(self))
 
+    def __eq__(self, other):
+        return self.symbol == other.symbol
+
 
 @dataclass
 class Branch:
@@ -62,6 +65,9 @@ class Branch:
             self.test.children_iterator(),
             *[b.children_iterator() for b in self.bids],
             *[b.children_iterator() for b in self.children])
+
+    def __eq__(self, other: Branch):
+        return (self.test, self.bids, self.children) == (other.test, other.bids, other.children)
 
 
 @dataclass
@@ -95,6 +101,9 @@ class BidStatement:
 
     def children_iterator(self):
         return one_shot_gen(self)
+
+    def __eq__(self, other):
+        return (self.level, self.suit) == (other.level, other.suit)
     
 
 class ExprType(Enum):
@@ -117,6 +126,9 @@ class InExpr:
     def children_iterator(self):
         return chain(self.element.children_iterator(), self.container.children_iterator())
 
+    def __eq__(self, other: InExpr):
+        return (self.element, self.container) == (other.element, other.container)
+
 
 @dataclass
 class BinaryExpr:
@@ -134,6 +146,9 @@ class BinaryExpr:
 
     def children_iterator(self):
         return chain(self.lhs.children_iterator(), self.rhs.children_iterator())
+
+    def __eq__(self, other):
+        return (self.lhs, self.op, self.rhs) == (other.lhs, other.op, other.rhs)
 
 
 class AtomType(Enum):
@@ -188,6 +203,9 @@ class Atom:
 
     def __repr__(self):
         return f"Atom(atom_type={self.type}, child={self.child})"
+
+    def __eq__(self, other):
+        return (self.type, self.child) == (other.type, other.child)
 
     def children_iterator(self):
         return one_shot_gen(self)

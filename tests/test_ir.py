@@ -31,3 +31,14 @@ def test_blas_executes():
         ex.execute(system.branches)
     except SystemIncompleteException:
         pass
+
+
+def test_ir_equality():
+    here = pathlib.Path(__file__)
+    root = here.parent.parent
+    system_fname = root / 'blas.ol'
+
+    system1 = System.load(system_fname)
+    system2 = System.load(system_fname)
+
+    assert system1 == system2
