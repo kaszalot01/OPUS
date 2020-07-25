@@ -1,10 +1,14 @@
 from opus.lang.ir import System, Executor, BalanceAnalyzer, SystemIncompleteException
+import pathlib
 from opus.card_utils.hand import Hand
 from lark import Tree
 
 
 def test_blas_parses():
-    system = System.load('./blas.ol')
+    here = pathlib.Path(__file__)
+    root = here.parent.parent
+    system_fname = root / 'blas.ol'
+    system = System.load(system_fname)
 
     for b in system.branches:
         for c in b.children_iterator():
@@ -12,7 +16,6 @@ def test_blas_parses():
 
 
 def test_blas_executes():
-    import pathlib
 
     here = pathlib.Path(__file__)
     root = here.parent.parent
