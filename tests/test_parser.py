@@ -54,3 +54,18 @@ def test_bid_after_branch():
 """
     with pytest.raises(Exception):
         _ = parser.parse(test_tree)
+
+
+def test_comments():
+    test_tree = \
+"""
+# top level
+@points > 21:
+    bid 2♦
+    # correctly indented
+
+    ♥ >= 4 and AK in ♥:  # inline1
+        bid 2♠  # inline2
+
+"""
+    _ = parser.parse(test_tree)

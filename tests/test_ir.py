@@ -1,10 +1,14 @@
 from opus.lang.ir import System, Executor, BalanceAnalyzer, SystemIncompleteException
+import pathlib
 from opus.card_utils.hand import Hand
 from lark import Tree
 
 
 def test_blas_parses():
-    system = System.load('./blas.ol')
+    here = pathlib.Path(__file__)
+    root = here.parent.parent
+    system_fname = root / 'blas.ol'
+    system = System.load(system_fname)
 
     for b in system.branches:
         for c in b.children_iterator():
@@ -12,7 +16,6 @@ def test_blas_parses():
 
 
 def test_blas_executes():
-    import pathlib
 
     here = pathlib.Path(__file__)
     root = here.parent.parent
@@ -28,3 +31,40 @@ def test_blas_executes():
         ex.execute(system.branches)
     except SystemIncompleteException:
         pass
+
+
+def test_ir_equality():
+    here = pathlib.Path(__file__)
+    root = here.parent.parent
+    system_fname = root / 'blas.ol'
+
+    system1 = System.load(system_fname)
+    system2 = System.load(system_fname)
+
+    assert system1 == system2
+
+
+def test_comments():
+    without_comment = \
+"""
+@points > 21:
+    bid 2♦
+    ♥ >= 4 and AK in ♥:
+        bid 2♠
+
+"""
+
+    with_comment = \
+"""
+# top level
+@points > 21:
+    bid 2♦
+    # correctly indented
+
+    ♥ >= 4 and AK in ♥:
+        bid 2♠
+
+"""
+    s_comment = System.parse_system(with_comment)
+    s_no_comment = (System.parse_system(without_comment))
+    assert s_comment == s_no_comment

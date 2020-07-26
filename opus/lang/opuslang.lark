@@ -50,6 +50,8 @@ bid_stmt: "bid" _bid_num suit _NL+
 !_bid_num: _BID_NUM
 !_number: NUMBER
 
+COMMENT: /#[^\n]*/
+
 %import common.CNAME -> NAME
 %import common.NUMBER
 %import common.WS_INLINE
@@ -57,4 +59,4 @@ bid_stmt: "bid" _bid_num suit _NL+
 %ignore WS_INLINE
 
 _BID_NUM: /[1-7]/
-_NL: /(\r?\n[\t ]*)+/
+_NL: ( /\r?\n[\t ]*/ | COMMENT )+
