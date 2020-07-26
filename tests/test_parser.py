@@ -64,8 +64,8 @@ def test_comments():
     bid 2♦
     # correctly indented
 
-    ♥ >= 4 and AK in ♥:
-        bid 2♠
+    ♥ >= 4 and AK in ♥:  # inline1
+        bid 2♠  # inline2
 
 """
     _ = parser.parse(test_tree)
