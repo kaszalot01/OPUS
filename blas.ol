@@ -18,6 +18,7 @@ not $vulnerable:
             ((H == 4 or S == 4) and @points >= 8) or (H >= 4 and S >= 4):
                 bid 2C
 
+
             H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4C
 
@@ -26,6 +27,42 @@ not $vulnerable:
 
             H >= 5:
                 bid 2D
+                @points >= 16 and H >= 4:
+                    S == 2:
+                        bid 2S
+                    C == 2:
+                        bid 3C
+                    D == 2:
+                        bid 3D
+                    @points == 17 and $counts == 4333:
+                        bid 2NT
+                2==2:
+                    bid 2H
+                    @points < 10:
+                        S == 4:
+                            bid 2S
+                        H >= 6:
+                            bid 3H
+                        2==2:
+                            bid 2NT
+                    @points >= 10:
+                        D > 4:
+                            bid 3D
+                        C >= 4:
+                            bid 3C
+                        H > 5 and @points > 12:
+                            S < 2:
+                                bid 3S
+                            C < 2:
+                                bid 4C
+                            D <2:
+                                bid 4D
+                            @points > 16:
+                                bid 4H
+                        2==2:
+                            bid 3NT
+                    2==2:
+                        pass
 
             S >= 5:
                 bid 2H
