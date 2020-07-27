@@ -1,4 +1,5 @@
-from opus.lang.ir import System, Executor, BalanceAnalyzer, SystemIncompleteException
+from opus.lang.ir import System, Executor, BalanceAnalyzer
+from opus.lang.exceptions import SystemIncompleteException
 import pathlib
 from opus.card_utils.hand import Hand
 from lark import Tree

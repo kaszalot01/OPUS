@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import lark
+
+from opus.lang.exceptions import SystemIncompleteException, UnexpectedToken
 from opus.lang.parser import parser
 from typing import List, Union, Optional, Any
 from dataclasses import dataclass
@@ -76,7 +79,11 @@ class System:
 
     @classmethod
     def parse_system(cls, opuslang_str):
-        tree = parser.parse(opuslang_str)
+        try:
+            tree = parser.parse(opuslang_str)
+        except lark.UnexpectedToken as e:
+            raise UnexpectedToken.from_lark(e)
+
         post_proc = IntermediateTransformer().transform(tree)
         if not hasattr(post_proc, "__iter__"):
             post_proc = [post_proc]
@@ -265,10 +272,6 @@ class IntermediateTransformer(Transformer):
     in_test = InExpr
     cmp_op = lambda _1, _2, s: str(s)
     logic_op = lambda _1, _2, s: str(s)
-
-
-class SystemIncompleteException(Exception):
-    pass
 
 
 class Executor:
