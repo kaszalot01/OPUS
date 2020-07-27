@@ -15,8 +15,115 @@ not $vulnerable:
         @points >= 15 and @points <= 17:
             bid 1NT
 
-            ((H == 4 or S == 4) and @points >= 8) or (H >= 4 and S >= 4):
+            ((H == 4 or S == 4) and @points >= 8) or (H >= 4 and S >= 4) or (@points >= 10 and (H == 5 or S == 5) and (H == 4 or S == 4) and (H != S)):
                 bid 2C
+
+                H <= 3 and S <= 3:
+                    bid 2D
+
+                    @points < 8 and (H > S or (H == S and Hpoints > Spoints)):
+                        bid 2H
+                        pass
+
+                    @points < 8 and S > H:
+                        bid 2S
+                        pass
+
+                    @points < 10:
+                        bid 2NT
+                        # end invite
+
+                    @points >= 10:
+
+                        S >= 5 and H >= 4:
+                            bid 3H
+                            # end gf
+
+                        S == 4 and H >= 5:
+                            bid 3S
+                            # end gf
+
+                        D >= 5:
+                            bid 3D
+                            # end gf
+
+                        C >= 5:
+                            bid 3C
+                            # end gf
+
+                        else:
+                            bid 3NT
+                            # TODO ?????
+
+                H == 4:
+                    bid 2H
+
+                    @points < 8:
+                        pass
+
+                    # invity
+                    @points < 10:
+                        H == 4:
+                            bid  3H
+                            # end invite
+                        else:
+                            bid 2NT
+                            # end invite
+
+                    # game force
+                    @points >= 10:
+
+                        @points >= 16 and H >= 4:
+                            bid 3D  # "szlemikowe uzgodnienie H"
+                            # end slam
+
+                        D >= 5:
+                            bid 3C
+                            # end gf
+
+                        C >= 5:
+                            bid 2S
+                            # end gf
+
+                        else:
+                            bid 3NT  # "pasuj popraw"
+                            # end ???
+
+                S == 4 and H <= 3:
+                    bid 2S
+
+                    @points < 8:
+                        pass
+
+                    # invites
+                    @points < 10:
+
+                        S >= 4:
+                            bid 3S
+                            # end invite
+
+                        else:
+                            bid 2NT
+                            # end invite
+
+                    # game force
+                    @points >= 10:
+                        @points >= 16 and S >= 4:
+                            bid 3S
+                            # end slam
+
+                        D >= 5:
+                            bid 3D
+                            # end gf
+
+                        C >= 5:
+                            bid 3C
+                            # end gf
+
+                        else:
+                            bid 3NT  # do gry
+                            # end ???
+
 
             H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4C
