@@ -159,6 +159,7 @@ class AtomType(Enum):
     NEG           = 5
     CARD_LIST     = 6
     LOGIC_NEG     = 7
+    BOOL_LITERAL  = 8
 
     TYPE_DICT = {
             "num": 1,
@@ -201,6 +202,9 @@ class Atom:
             assert isinstance(child_val, bool)
             return not child_val
 
+        elif self.type is AtomType.BOOL_LITERAL:
+            return self.child
+
     def __repr__(self):
         return f"Atom(atom_type={self.type}, child={self.child})"
 
@@ -230,6 +234,8 @@ class IntermediateTransformer(Transformer):
 
     bid_stmt = BidStatement
     suit = Suit
+
+    else_clause = partial(Atom, "BOOL_LITERAL", child=False)
 
     def start(self, _meta, *children):
         return children
