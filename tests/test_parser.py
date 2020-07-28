@@ -1,6 +1,7 @@
-from lark import Lark
+from lark import Lark, UnexpectedToken
 from opus.lang.parser import parser
 import pytest
+from pathlib import Path
 
 
 def test_basic_grammar():
@@ -23,6 +24,8 @@ def test_basic_grammar():
 
             ♣ >- 6 and 2 * ♣ + 0.5 * ♣points + @points >= 29.5 and @points < 15:
                 bid 4♥
+    else:
+        pass
 """
     _ = parser.parse(test_tree)
 
@@ -69,3 +72,35 @@ def test_comments():
 
 """
     _ = parser.parse(test_tree)
+
+
+def test_no_anonymous_tokens():
+    from copy import deepcopy
+    import random
+
+    here = Path(__file__)
+    blas_fname = here.parent.parent / "blas.ol"
+    with open(blas_fname) as file:
+        blas_text = file.read()
+
+    blas_lines = blas_text.split("\n")
+
+    for _ in range(100):
+        lines_copy = deepcopy(blas_lines)
+
+        victim_index = random.randrange(len(lines_copy))
+        victim_list = list(lines_copy[victim_index])
+        try:
+            insertion_point = random.randrange(len(victim_list))
+        except ValueError:
+            continue
+        victim_list[insertion_point:insertion_point] = list("error_here")
+        lines_copy[victim_index] = "".join(victim_list)
+        bad_system_text = "\n".join(lines_copy)
+        try:
+            _ = parser.parse(bad_system_text)
+        except UnexpectedToken as e:
+            for token_name in e.expected:
+                assert "ANON" not in token_name
+        except:
+            pass
