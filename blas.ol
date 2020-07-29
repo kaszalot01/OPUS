@@ -127,9 +127,11 @@ not $vulnerable:
 
             H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4C
+                bid 4H
 
             S >= 6 and (S + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4D
+                bid 4S
 
             H >= 5:
                 bid 2D
@@ -175,41 +177,94 @@ not $vulnerable:
 
             C >= 6 and 2 * C + 0.5 * Cpoints + @points >= 29.5 and @points < 15:
                 bid 4H
+                # slam
+                # end
 
             D >= 6 and 2 * D + 0.5 * Dpoints + @points >= 29.5 and @points < 15:
                 bid 4S
+                # slam
+                # end
 
-            D >= 5 and  C >= 5:
+            # nie ma inwitu po 1NT - 2NT. Inwity idą przez 1NT - 2S
+            D >= 5 and C >= 5 and @points != 8 and @points != 9:
                 bid 2NT
 
+                D > C or (D == C and Dpoints > Cpoints):
+                    bid 3D
+
+                    @points < 10:
+                        pass
+
+                    # gameforce?
+                    # end
+
+                else:
+                    bid 3C
+
+                    @points < 10:
+                        pass
+
+                    # gameforce?
+                    # end
+
             @points == 8 or @points == 9 or C >= 6:
-                bid 2C
+                bid 2S
+
+                # dół otwarcia
+                @points == 15:
+                    bid 2NT
+
+                # góra otwarcia
+                @points > 15:
+                    bid 3C
 
             D >= 6:
+                bid 3C
                 bid 3D
+                # end
+
 
             $counts == 5431 and H == 1 and S == 3 and @points >= 10:
                 bid 3H
+                # end
 
             $counts == 5431 and H == 3 and S == 1 and @points >= 10:
                 bid 3S
+                # end
 
             H == 3 or S == 3 and @points >= 10 and $balance == 0:
                 bid 3D
 
+                S >= 5 and (S > H or (H == S and Spoints >= Hpoints)):
+                    bid 3S
+                    # gameforce
+                    # end
+
+                H >= 5:
+                    bid 3H
+                    # gameforce
+                    # end
+
+                else:
+                    bid 3NT
+
             @points >= 10 and @points <= 15:
                 bid 3NT
+                # end
 
             @points == 16 or @points == 17:
                 bid 4NT
+                # end
 
             @points == 18:
                 bid 6NT
+                # end
 
             @points == 19 or @points == 20:
                 bid 5NT
+                # end
 
-            2 == 2:
+            else:
                 pass
 
         @points < 12:
