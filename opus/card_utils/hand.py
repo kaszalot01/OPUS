@@ -80,24 +80,97 @@ class Hand:
             new_vars = analyzer.analyze(self)
             self.env.vars.update(new_vars)
 
-        self.env.points = {
-            "C": self.clubs_points,
-            "D": self.diamonds_points,
-            "H": self.hearts_points,
-            "S": self.spades_points,
-            "@": self.spades_points + self.hearts_points + self.diamonds_points + self.clubs_points
-        }
-        self.env.counts = {
-            "C": self.clubs_count,
-            "D": self.diamonds_count,
-            "H": self.hearts_count,
-            "S": self.spades_count,
-        }
 
-        self.env.cards = {
-            "C": self.clubs,
-            "D": self.diamonds,
-            "H": self.hearts,
-            "S": self.spades,
-        }
+def pure_random_deal():
+    order = [0] * 13 + [1] * 13 + [2] * 13 + [3] * 13
+    random.shuffle(order)
+
+    hands_chars = [["S"], ["S"], ["S"], ["S"]]
+    index = 0
+
+    cards = "AKQJT98765432"
+    for _ in range(13):
+        player = order[index]
+        card = cards[index % 13]
+        hands_chars[player].append(card)
+        index += 1
+
+    for hand_c in hands_chars:
+        hand_c.append("H")
+
+    for _ in range(13):
+        player = order[index]
+        card = cards[index % 13]
+        hands_chars[player].append(card)
+        index += 1
+
+    for hand_c in hands_chars:
+        hand_c.append("D")
+
+    for _ in range(13):
+        player = order[index]
+        card = cards[index % 13]
+        hands_chars[player].append(card)
+        index += 1
+
+    for hand_c in hands_chars:
+        hand_c.append("C")
+
+    for _ in range(13):
+        player = order[index]
+        card = cards[index % 13]
+        hands_chars[player].append(card)
+        index += 1
+
+    return [Hand("".join(c_list)) for c_list in hands_chars]
+
+
+def generate_rejection_sampled(predicate: Callable[[Hand, Hand], bool]) -> Iterator[Tuple[Hand, Hand]]:
+    while True:
+        deal = pure_random_deal()
+        for pair in itertools.combinations(deal, 2):
+            if predicate(*pair):
+                yield pair
+
+
+def generate_type(deal_type: str) -> Iterator[Tuple[Hand, Hand]]:
+    deal_type_hcp = {
+        "random": 0,
+        "game": 24,
+        "minor_game": 27,
+        "slam": 32
+    }
+    if deal_type not in deal_type_hcp:
+        raise ValueError("deal_type should be one of: " + ", ".join(deal_type_hcp.keys()))
+
+    def pred(h1: Hand, h2: Hand) -> bool:
+        return h1.total_hcp() + h2.total_hcp() >= deal_type_hcp[deal_type]
+
+    return generate_rejection_sampled(pred)
+
+
+T = TypeVar('T')
+def take(iterable: Iterator[T], n: int) -> Iterator[T]:
+    for _, el in zip(range(n), iterable):
+        yield el
+
+
+def exhaust(iterable: Iterator):
+    for _ in iterable:
+        pass
+
+
+if __name__ == '__main__':
+
+    def game_hcp(h1: Hand, h2: Hand) -> bool:
+        return h1.total_hcp() + h2.total_hcp() >= 36
+
+    gen_slam = generate_rejection_sampled(game_hcp)
+    import time
+    t1 = time.time()
+    exhaust(take(gen_slam, 1000))
+    t2 = time.time()
+    print(t2 - t1)
+
+
 
