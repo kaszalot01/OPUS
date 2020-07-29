@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import lark
 
-from opus.lang.exceptions import SystemIncompleteException, UnexpectedToken
+from opus.lang.exceptions import UnexpectedToken
 from opus.lang.parser import parser
 from typing import List, Union, Optional, Any
 from dataclasses import dataclass
 from enum import Enum, auto
 from lark import Transformer, v_args
 from functools import partial
-from opus.card_utils.hand import Hand, Env, HandAnalyzer
+from opus.card_utils.hand import Hand
 from itertools import chain
 
 
@@ -274,37 +274,6 @@ class IntermediateTransformer(Transformer):
     logic_op = lambda _1, _2, s: str(s)
 
 
-class Executor:
-
-    def __init__(self, system: System, hand0: Hand, hand1: Hand):
-        self.system = system
-        self.hand0 = hand0
-        self.hand1 = hand1
-        self.hands = [hand0, hand1]
-        self.bidding_hand = 0
-
-        self.result = ""
-
-    def execute(self, branches: List[Branch]):
-        for branch in branches:
-            test_eval = branch.test.eval(self.hands[self.bidding_hand].env)
-            assert isinstance(test_eval, bool)
-
-            if test_eval:
-                for bid in branch.bids:
-                    self.bid(bid)
-                self.execute(branch.children)
-                return
-        raise SystemIncompleteException("System incomplete")
-
-    def bid(self, bid_statement: BidStatement):
-        self.result += f"{bid_statement} - "
-        self.bidding_hand = 1 - self.bidding_hand
-
-
-
-
-
 test_system = """
 AT in S:
     S >= 5:
@@ -315,22 +284,6 @@ AT in S:
 @points >= 20:
     bid 7NT
 """
-
-
-class BalanceAnalyzer(HandAnalyzer):
-
-    @staticmethod
-    def analyze(hand: Hand):
-        counts = [hand.clubs_count, hand.diamonds_count, hand.hearts_count, hand.spades_count]
-        counts.sort(reverse=True)
-        if counts[0] == 4 and counts[-1] > 1:
-            balance = 2
-        elif counts == [5, 3, 3, 2]:
-            balance = 1
-        else:
-            balance = 0
-        return {"balance": balance}
-
 
 if __name__ == '__main__':
     system = System.load("./blas.ol")

@@ -1,4 +1,6 @@
-from opus.lang.ir import System, Executor, BalanceAnalyzer
+from opus.lang.ir import System
+from opus.analyzer.execute import Executor
+from opus.analyzer.hand_eval import BalanceAnalyzer, HandAnalyzer, DummyDictAnalyzer
 from opus.lang.exceptions import SystemIncompleteException
 import pathlib
 from opus.card_utils.hand import Hand
@@ -52,11 +54,10 @@ def test_blas_executes():
     system_fname = root / 'blas.ol'
 
     system = System.load(system_fname)
-    h0 = Hand("SAT567HKQD432CA43", analyzers=(BalanceAnalyzer(),))
-    h1 = Hand("SQJ8HAT89DAK8CAJ2", analyzers=(BalanceAnalyzer(),))
-    h0.env.vars['vulnerable'] = False
-    h1.env.vars['vulnerable'] = False
-    ex = Executor(system, h0, h1)
+    h0 = Hand("SAT567HKQD432CA43")
+    h1 = Hand("SQJ8HAT89DAK8CAJ2")
+    vulnerable_analyzer = DummyDictAnalyzer({"vulnerable": True})
+    ex = Executor(system, h0, h1, [vulnerable_analyzer])
     try:
         ex.execute(system.branches)
     except SystemIncompleteException:
