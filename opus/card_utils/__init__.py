@@ -1,1 +1,2 @@
-from .hand import HandAnalyzer, Hand, Env
+from .hand import Hand
+from ..analyzer.hand_eval import Env, HandAnalyzer

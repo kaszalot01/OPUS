@@ -1,7 +1,9 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
 
-from typing import Tuple
+import itertools
+import random
+
+from typing import Tuple, Callable, Iterator, TypeVar
 
 POINT_DICT = {
     "A": 4,
@@ -39,22 +41,8 @@ def count_hcp(suit_string):
     return sum(map(lambda c: POINT_DICT[c], suit_string))
 
 
-@dataclass
-class Env:
-    vars: dict = field(default_factory=dict)
-    counts: dict = field(default_factory=dict)
-    cards: dict = field(default_factory=dict)
-    points: dict = field(default_factory=dict)
-
-
-class HandAnalyzer:
-
-    def analyze(self, hand: Hand):
-        return {}
-
-
 class Hand:
-    def __init__(self, card_string, analyzers: Tuple[HandAnalyzer] = ()):
+    def __init__(self, card_string):
 
         by_color = split_by_predicate(card_string, lambda c: c in "CDHS")
 
@@ -74,11 +62,11 @@ class Hand:
         self.spades_count = len(by_color[0])
         self.spades_points = count_hcp(self.spades)
 
-        self.env = Env()
+    def __str__(self):
+        return f"♠{self.clubs} ♥{self.hearts} ♦{self.diamonds} ♣{self.clubs}"
 
-        for analyzer in analyzers:
-            new_vars = analyzer.analyze(self)
-            self.env.vars.update(new_vars)
+    def total_hcp(self):
+        return self.spades_points + self.hearts_points + self.diamonds_points + self.clubs_points
 
 
 def pure_random_deal():
