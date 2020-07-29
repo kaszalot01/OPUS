@@ -1,6 +1,7 @@
 
 not $vulnerable:
 
+    # acol
     @points > 21:
         bid 2D
 
@@ -10,11 +11,13 @@ not $vulnerable:
         @points >= 15 and  @points <= 17 and S >= 2 and H >= 2:
             bid 4C
 
+    # sklad zrownowazony
     $balance == 2 or $balance == 1:
 
         @points >= 15 and @points <= 17:
             bid 1NT
 
+            # stayman
             ((H == 4 or S == 4) and @points >= 8) or (H >= 4 and S >= 4) or (@points >= 10 and (H == 5 or S == 5) and (H == 4 or S == 4) and (H != S)):
                 bid 2C
 
@@ -35,10 +38,11 @@ not $vulnerable:
 
                     @points >= 10:
 
+                        # smolen
                         S >= 5 and H >= 4:
                             bid 3H
                             # end gf
-
+                        # smolen
                         S == 4 and H >= 5:
                             bid 3S
                             # end gf
@@ -61,7 +65,7 @@ not $vulnerable:
                     @points < 8:
                         pass
 
-                    # invity
+                    # inwity
                     @points < 10:
                         H == 4:
                             bid  3H
@@ -89,13 +93,13 @@ not $vulnerable:
                             bid 3NT  # "pasuj popraw"
                             # end ???
 
-                S == 4 and H <= 3:
+                S == 4:
                     bid 2S
 
                     @points < 8:
                         pass
 
-                    # invites
+                    # inwity
                     @points < 10:
 
                         S >= 4:
@@ -124,15 +128,68 @@ not $vulnerable:
                             bid 3NT  # do gry
                             # end ???
 
-
-            H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
-                bid 4C
-
+            # transfer (teksas) RPA na piki
             S >= 6 and (S + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4D
 
+            # transfer (teksas) RPA na kiery
+            H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
+                bid 4C
+
+            # trasfer na piki
+            S >= 5:
+                bid 2H
+
+                # super accept
+                @points >= 16 and S >= 4:
+                    C == 2:
+                        bid 3C
+                    D == 2:
+                        bid 3D
+                    H == 2:
+                        bid 3H
+                    @points == 17 and $counts == 4333:
+                        bid 2NT
+
+                # accept
+                else:
+                    bid 2S
+                    @points < 8:
+                        pass
+
+                    # inwity
+                    @points < 10:
+                        S >= 6:
+                            bid 3S
+                        H >= 4:
+                            bid 3H
+                        else:
+                            bid 2NT
+
+                    # game force
+                    @points >= 10:
+                        S > 5 and @points > 12:
+                            C < 2:
+                                bid 4C
+                            D <2:
+                                bid 4D
+                            H < 2:
+                                bid 4H
+                            @points > 16:
+                                bid 4S
+                        D > 4:
+                            bid 3D
+                        C >= 4:
+                            bid 3C
+                        2==2:
+                            bid 3NT
+
+
+            # trasfer na kiery
             H >= 5:
                 bid 2D
+
+                # supper accept
                 @points >= 16 and H >= 4:
                     S == 2:
                         bid 2S
@@ -142,20 +199,24 @@ not $vulnerable:
                         bid 3D
                     @points == 17 and $counts == 4333:
                         bid 2NT
+
+                # accept
                 2==2:
                     bid 2H
+
+                    @points < 8:
+                        pass
+
+                    # inwity
                     @points < 10:
-                        S == 4:
-                            bid 2S
                         H >= 6:
                             bid 3H
+                        S == 4:
+                            bid 2S
                         2==2:
                             bid 2NT
+                    # game force
                     @points >= 10:
-                        D > 4:
-                            bid 3D
-                        C >= 4:
-                            bid 3C
                         H > 5 and @points > 12:
                             S < 2:
                                 bid 3S
@@ -165,13 +226,18 @@ not $vulnerable:
                                 bid 4D
                             @points > 16:
                                 bid 4H
+                        D > 4:
+                            bid 3D
+                        C >= 4:
+                            bid 3C
                         2==2:
                             bid 3NT
-                    2==2:
-                        pass
 
-            S >= 5:
-                bid 2H
+
+
+
+
+
 
             C >= 6 and 2 * C + 0.5 * Cpoints + @points >= 29.5 and @points < 15:
                 bid 4H
@@ -183,7 +249,7 @@ not $vulnerable:
                 bid 2NT
 
             @points == 8 or @points == 9 or C >= 6:
-                bid 2C
+                bid 2S
 
             D >= 6:
                 bid 3D
