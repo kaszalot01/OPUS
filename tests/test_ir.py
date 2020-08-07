@@ -124,3 +124,26 @@ def test_bid_statement_cmp():
     assert BidStatement(None, 4, Suit(None, "C")) > BidStatement(None, 1, Suit(None, "S"))
     assert BidStatement(None, 4, Suit(None, "C")) > BidStatement(None, 3, Suit(None, "NT"))
     assert BidStatement(None, 2, Suit(None, "D")) < BidStatement(None, 2, Suit(None, "H"))
+
+
+def test_end_statement_usage():
+    test_system = \
+"""
+@points > 21:
+    bid 2♦
+
+    ♥ >= 4 and @points < 15:
+        bid 2♠
+        end  # both blank...
+
+    @points >= 15 and @points <= 17 and ♠ >= 2 and ♥ >= 2:
+        bid 4♣
+        end gf   # and labeled ends are acceptable
+"""
+    system = System.parse_system(test_system)
+
+    for b in system.branches:
+        for c in b.children_iterator():
+            assert not isinstance(c, Tree)
+            assert not isinstance(c, Token)
+    pass

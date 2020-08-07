@@ -34,7 +34,8 @@ class Executor:
             if test_eval:
                 for bid in branch.bids:
                     self.bid(bid)
-                self.execute(branch.children)
+                if branch.end is not None:
+                    self.execute(branch.children)
                 return
         if len(branches) > 0:
             raise SystemIncompleteException("System incomplete after line:", branch.meta.line)

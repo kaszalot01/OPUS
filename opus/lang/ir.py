@@ -79,6 +79,7 @@ class Branch:
     test: Test
     bids: List[BidStatement]
     children: List[Branch]
+    end: Optional[EndStatement] = None
 
     def children_iterator(self):
         return chain(
@@ -143,6 +144,12 @@ class BidStatement:
         s = s.replace(" ", "")
         l = s.split("-")
         return tuple(map(BidStatement.from_string, l))
+
+
+@dataclass(frozen=True)
+class EndStatement:
+    meta: Optional[lark.Meta] = field(default=None, repr=False)
+    label: Optional[str] = None
 
 
 class ExprType(Enum):
@@ -283,7 +290,17 @@ class IntermediateTransformer(Transformer):
         return children
 
     def branch(self, meta, test, bids_and_branches):
-        return Branch(meta, test, bids_and_branches[0], bids_and_branches[1])
+        """bids_and_branches comes from transformation of body rule
+        First item will be a list of statements
+        second item will either be a list of child branches, or an end statement"""
+        if isinstance(bids_and_branches[1], list):
+            return Branch(meta, test, bids_and_branches[0], bids_and_branches[1])
+        elif isinstance(bids_and_branches[1], EndStatement):
+            return Branch(meta, test, bids_and_branches[0], [], bids_and_branches[1])
+        else:
+            raise ValueError("branch transformer got invalid type in bids_and_branches: {}".format(
+                str(type(bids_and_branches[1])))
+            )
 
     def body(self, _meta, *children):
         bids = []
@@ -295,6 +312,27 @@ class IntermediateTransformer(Transformer):
                 branches.append(c)
         return bids, branches
 
+    single_bid = body
+    branched_bid = body
+
+    def ended_bid(self, _meta, *children):
+        bids = []
+        end = None
+        for i, c in enumerate(children):
+            if isinstance(c, BidStatement):
+                bids.append(c)
+            elif isinstance(c, EndStatement):
+                end = c
+                if i != len(children) - 1:
+                    raise Exception("End should be the end of the branch")
+
+        return bids, end
+
+    end_stmt = EndStatement
+
+    def end_label(self, _meta, child=""):
+        return str(child)
+
     def logic_test(self, meta, lhs, op, rhs):
         return BinaryExpr(meta, lhs, op, rhs)
 
@@ -302,6 +340,7 @@ class IntermediateTransformer(Transformer):
     sub = partial(binary_arithmetic, "-")
     mul = partial(binary_arithmetic, "*")
     div = partial(binary_arithmetic, "/")
+
 
     cmp_test = logic_test
     in_test = InExpr
