@@ -131,6 +131,7 @@ not $vulnerable:
             # transfer (teksas) RPA na piki
             S >= 6 and (S + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4D
+                bid 4S
 
             # transfer (teksas) RPA na kiery
             H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
