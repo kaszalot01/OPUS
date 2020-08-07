@@ -1,3 +1,5 @@
+import collections
+import itertools
 from typing import List, Optional, Iterator
 
 from opus.analyzer.hand_eval import Env, HandAnalyzer
@@ -22,7 +24,7 @@ class Executor:
 
         self.bidding_hand = 0
 
-        self.result = ""
+        self.result = []
 
     def execute(self, branches: List[Branch]):
         for branch in branches:
@@ -34,8 +36,12 @@ class Executor:
                     self.bid(bid)
                 self.execute(branch.children)
                 return
-        raise SystemIncompleteException("System incomplete")
+        if len(branches) > 0:
+            raise SystemIncompleteException("System incomplete after line:", branch.meta.line)
+        else:
+            raise SystemIncompleteException("System incomplete after line ???")
 
     def bid(self, bid_statement: BidStatement):
-        self.result += f"{bid_statement} - "
+        self.result.append(bid_statement)
         self.bidding_hand = 1 - self.bidding_hand
+

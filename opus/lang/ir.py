@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import lark
 
+from opus.analyzer.hand_eval import Env
 from opus.lang.exceptions import UnexpectedToken
 from opus.lang.parser import parser
-from typing import List, Union, Optional, Any
-from dataclasses import dataclass
+from typing import List, Union, Optional, Any, Tuple
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from lark import Transformer, v_args
-from functools import partial
+from functools import partial, total_ordering
 from opus.card_utils.hand import Hand
 from itertools import chain
 
@@ -18,6 +19,7 @@ def one_shot_gen(*args):
         yield i
 
 
+@total_ordering
 class Suit:
     pretty_to_ugly = {
         "♣": "C",
@@ -30,7 +32,16 @@ class Suit:
 
     ugly_to_pretty = {v: k for k, v in pretty_to_ugly.items()}
 
+    cmp_value = {
+        "C": 1,
+        "D": 2,
+        "H": 3,
+        "S": 4,
+        "NT": 5,
+    }
+
     def __init__(self, meta, symbol):
+        self.meta = meta
         symbol = str(symbol)  # convert lark Token to str
         if symbol in self.pretty_to_ugly:
             symbol = self.pretty_to_ugly[symbol]
@@ -55,11 +66,17 @@ class Suit:
     def __eq__(self, other):
         return self.symbol == other.symbol
 
+    def __lt__(self, other):
+        assert isinstance(other, Suit)
+        if self.symbol == "@":
+            raise ValueError("@ is not comparable")
+        return self.cmp_value[self.symbol] < self.cmp_value[other.symbol]
+
 
 @dataclass
 class Branch:
     meta: Optional[Any]
-    test: BinaryExpr
+    test: Test
     bids: List[BidStatement]
     children: List[Branch]
 
@@ -95,23 +112,38 @@ class System:
             return cls.parse_system(file.read())
 
 
-@dataclass
+@dataclass(frozen=True, order=True)
 class BidStatement:
-    meta: Optional[Any] = None
-    level: Optional[int] = None
+    meta: Optional[Any] = field(default=None, compare=False, repr=False)
+    level: Optional[int] = 0
     suit: Optional[Suit] = None
 
+    def __post_init__(self):
+        if self.level is not None:
+            object.__setattr__(self, "level", int(self.level))
+
     def __str__(self):
-        if self.level is None and self.suit is None:
+        if self.level == 0 and self.suit is None:
             return "pass"
         return f"{self.level}{self.suit}"
 
     def children_iterator(self):
         return one_shot_gen(self)
 
-    def __eq__(self, other):
-        return (self.level, self.suit) == (other.level, other.suit)
-    
+    @classmethod
+    def from_string(cls, s: str) -> BidStatement:
+        if s == "pass":
+            return cls(None, None, None)
+        num = int(s[0])
+        suit = s[1:]
+        return BidStatement(None, num, Suit(None, suit))
+
+    @classmethod
+    def from_string_seq(cls, s: str) -> Tuple[BidStatement, ...]:
+        s = s.replace(" ", "")
+        l = s.split("-")
+        return tuple(map(BidStatement.from_string, l))
+
 
 class ExprType(Enum):
     BOOL = auto()
@@ -220,6 +252,9 @@ class Atom:
 
     def children_iterator(self):
         return one_shot_gen(self)
+
+
+Test = Union[InExpr, BinaryExpr, Atom]
 
 
 def binary_arithmetic(op, meta, lhs, rhs):

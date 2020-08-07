@@ -1,10 +1,12 @@
-from opus.lang.ir import System
+import pytest
+
+from opus.lang.ir import System, Suit, BidStatement
 from opus.analyzer.execute import Executor
 from opus.analyzer.hand_eval import BalanceAnalyzer, HandAnalyzer, DummyDictAnalyzer
 from opus.lang.exceptions import SystemIncompleteException
 import pathlib
 from opus.card_utils.hand import Hand
-from lark import Tree
+from lark import Tree, Token
 
 
 def test_blas_parses():
@@ -45,6 +47,7 @@ def test_simple_ir_parse():
     for b in system.branches:
         for c in b.children_iterator():
             assert not isinstance(c, Tree)
+            assert not isinstance(c, Token)
 
 
 def test_blas_executes():
@@ -56,8 +59,8 @@ def test_blas_executes():
     system = System.load(system_fname)
     h0 = Hand("SAT567HKQD432CA43")
     h1 = Hand("SQJ8HAT89DAK8CAJ2")
-    vulnerable_analyzer = DummyDictAnalyzer({"vulnerable": True})
-    ex = Executor(system, h0, h1, [vulnerable_analyzer])
+    vulnerable_analyzer = DummyDictAnalyzer({"vulnerable": False})
+    ex = Executor(system, h0, h1, [vulnerable_analyzer, BalanceAnalyzer()])
     try:
         ex.execute(system.branches)
     except SystemIncompleteException:
@@ -99,3 +102,25 @@ def test_comments():
     s_comment = System.parse_system(with_comment)
     s_no_comment = (System.parse_system(without_comment))
     assert s_comment == s_no_comment
+
+
+def test_suit_cmp():
+    assert Suit(None, 'NT') > Suit(None, 'C')
+    assert Suit(None, 'NT') > Suit(None, 'D')
+    assert Suit(None, 'NT') > Suit(None, 'S')
+    assert Suit(None, 'S') > Suit(None, 'H')
+    assert Suit(None, 'S') > Suit(None, 'C')
+    assert Suit(None, 'H') > Suit(None, 'D')
+
+    with pytest.raises(Exception):
+        _ = Suit(None, "@") < Suit(None, "NT")
+    with pytest.raises(Exception):
+        _ = Suit(None, "@") > Suit(None, "NT")
+
+
+def test_bid_statement_cmp():
+    assert BidStatement(None, 1, Suit(None, "C")) < BidStatement(None, 1, Suit(None, "NT"))
+    assert BidStatement(None, 1, Suit(None, "C")) < BidStatement(None, 1, Suit(None, "S"))
+    assert BidStatement(None, 4, Suit(None, "C")) > BidStatement(None, 1, Suit(None, "S"))
+    assert BidStatement(None, 4, Suit(None, "C")) > BidStatement(None, 3, Suit(None, "NT"))
+    assert BidStatement(None, 2, Suit(None, "D")) < BidStatement(None, 2, Suit(None, "H"))
