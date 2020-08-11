@@ -5,7 +5,7 @@
 branch: test ":" body
 body: bid_stmt                                -> single_bid
     | _NL _INDENT bid_stmt* branch* _DEDENT   -> branched_bid
-    | _NL _INDENT bid_stmt+ end_stmt _DEDENT  -> ended_bid
+    | _NL _INDENT bid_stmt* end_stmt _DEDENT  -> ended_bid
 
 
 ?test: expr cmp_op expr        -> cmp_test
@@ -46,9 +46,10 @@ NOTEQUALS: "!="
 bid_stmt: "bid" _bid_num suit _NL+
     | "pass" _NL+
 
-end_stmt: "end" end_label
+end_stmt: "end" [end_label] _NL
 
-end_label: NAME* _NL
+end_label: _ANY_BUT_NL
+_ANY_BUT_NL: /[^\n]+/
 
 // Name terminals to avoid confusing error messages
 CARD_LIST: /[AKQJT98765432]+/
