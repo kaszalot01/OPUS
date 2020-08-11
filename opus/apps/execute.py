@@ -1,7 +1,10 @@
 from __future__ import annotations
-from collections import Counter, defaultdict
 
-from typing import List, Tuple, DefaultDict, Union
+import itertools
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+
+from typing import List, Tuple, DefaultDict, Union, Optional
 
 from opus.card_utils import Hand, generate_type, take
 from opus.lang.ir import System, BidStatement, Suit
@@ -10,28 +13,38 @@ from opus.analyzer.hand_eval import BalanceAnalyzer, DummyDictAnalyzer
 from opus.lang.exceptions import UnexpectedToken, SystemIncompleteException
 
 
+PLACEHOLDER_ERROR_BID = BidStatement.from_string("8C")
+
+
 class BranchReport:
 
     def __init__(self):
-        self.counter: DefaultDict[BidStatement, List[Union[int, BranchReport]]] = defaultdict(lambda: [0, BranchReport()])
+        self.counter: DefaultDict[BidStatement, SubBranch] = defaultdict(SubBranch)
 
-    def add(self, bids: Tuple[BidStatement, ...]):
+    def add(self, bids: Tuple[BidStatement, ...], deal: Tuple[Hand, Hand]):
 
         if len(bids) > 0:
             head, *tail = bids
-            self.counter[head][0] += 1
-            self.counter[head][1].add(tail)
+            self.counter[head].count += 1
+            self.counter[head].report.add(tail, deal)
+            if len(tail) >= 1 and tail[-1] == PLACEHOLDER_ERROR_BID:
+                self.counter[head].correct_bidding = False
+
         else:
-            self.counter[()][0] += 1
+            self.counter[()].count += 1
+            self.counter[()].leaf = True
+            self.counter[()].deals.append(deal)
 
     def is_leaf(self) -> bool:
         return len(self.counter) == 1 and () in self.counter
 
     def all_routes(self) -> List[Tuple[int, Tuple[BidStatement]]]:
         if self.is_leaf():
-            return [(self.counter[()][0], ())]
+            return [(self.counter[()].count, ())]
         result = []
-        for start, (count, rep) in self.counter.items():
+        for start, sub in self.counter.items():
+            rep = sub.report
+            count = sub.count
             child_routes = rep.all_routes()
             if start == ():
                 assert len(child_routes) == 0
@@ -42,27 +55,60 @@ class BranchReport:
         result.sort(reverse=True)
         return result
 
+    def deal_iter(self):
+        result = iter(())
+        for sub in self.counter.values():
+            if sub.leaf:
+                result = itertools.chain(result, sub.deals)
+            else:
+                result = itertools.chain(result, sub.report.deal_iter())
+
+        return result
+
     def starts_with(self, s: str) -> BranchReport:
         num = int(s[0])
         suit_str = s[1:]
         bid_stmt = BidStatement(None, num, Suit(None, suit_str))
-        return self.counter[bid_stmt][1]
+        return self.counter[bid_stmt].report
+
+
+@dataclass
+class SubBranch:
+    count: int = 0
+    report: BranchReport = field(default_factory=BranchReport)
+    correct_bidding: bool = True
+    leaf: bool = False
+    deals: List[Tuple[Hand, Hand]] = field(default_factory=list)
 
 
 def repl(rep: BranchReport, root=()):
+
+    def intro_stirng(b: BidStatement, s: SubBranch) -> str:
+        correct = "✔"
+        incorrect = "✕"
+        emoji = correct if s.correct_bidding else incorrect
+        return f"{str(b):<3} {emoji} - {s.count}"
+
     while True:
         print("Przeglądasz gałąź:\nStart: ", " - ".join(map(str, root)))
 
         print("Następne odzywki:")
-        for bid, (count, _) in rep.counter.items():
-            print(f"{bid}: {count}")
+        for bid, sub in rep.counter.items():
+            print(intro_stirng(bid, sub))
 
         ans = input("\nPrzeglądaj gałąź ('.' aby wrócić gałąź wyżej): ")
         if ans == ".":
             return
-        bid_ans = BidStatement.from_string(ans)
-        _, child = rep.counter[bid_ans]
-        repl(child, root + (bid_ans,))
+        elif ans == "p":
+            l = list(take(rep.deal_iter(), 5))
+            for pair in l:
+                print(pair[0])
+                print(pair[1])
+                print()
+        else:
+            bid_ans = BidStatement.from_string(ans)
+            child = rep.counter[bid_ans].report
+            repl(child, root + (bid_ans,))
 
 
 def execute(fname):
@@ -84,7 +130,7 @@ def execute(fname):
         try:
             ex.execute(system.branches)
         except SystemIncompleteException as e:
-            cause = e
+            ex.result.append(PLACEHOLDER_ERROR_BID)
 
         counter[tuple(ex.result)] += 1
         if tuple(ex.result) == BidStatement.from_string_seq("1NT-2C"):
@@ -96,7 +142,7 @@ def execute(fname):
             print("UWAGA TEN DEBIL NIC NIE ZROBIL NA OTWARCIU")
             print("\n".join(map(str, pair)))
             print()
-        rep.add(ex.result)
+        rep.add(ex.result, pair)
 
     repl(rep)
 
