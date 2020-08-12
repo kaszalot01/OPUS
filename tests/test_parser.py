@@ -29,6 +29,7 @@ def test_basic_grammar():
 """
     _ = parser.parse(test_tree)
 
+
 def test_contains_operator():
     test_tree = \
 """
@@ -40,6 +41,7 @@ def test_contains_operator():
 
 """
     _ = parser.parse(test_tree)
+
 
 def test_bid_after_branch():
     test_tree = \
@@ -104,3 +106,20 @@ def test_no_anonymous_tokens():
                 assert "ANON" not in token_name
         except:
             pass
+
+
+def test_end_statement_usage():
+    test_tree = \
+"""
+@points > 21:
+    bid 2♦
+
+    ♥ >= 4 and @points < 15:
+        bid 2♠
+        end  # both blank...
+        
+    @points >= 15 and @points <= 17 and ♠ >= 2 and ♥ >= 2:
+        bid 4♣
+        end gf   # and labeled ends are acceptable
+"""
+    _ = parser.parse(test_tree)

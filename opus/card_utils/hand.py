@@ -44,7 +44,7 @@ def count_hcp(suit_string):
 class Hand:
     def __init__(self, card_string):
 
-        by_color = split_by_predicate(card_string, lambda c: c in "CDHS")
+        by_color = split_by_predicate(card_string.replace(" ", ""), lambda c: c in "CDHS♥♠♣♦")
 
         self.clubs = by_color[3]
         self.clubs_count = len(by_color[3])
@@ -63,7 +63,7 @@ class Hand:
         self.spades_points = count_hcp(self.spades)
 
     def __str__(self):
-        return f"♠{self.clubs} ♥{self.hearts} ♦{self.diamonds} ♣{self.clubs}"
+        return f"♠{self.spades} ♥{self.hearts} ♦{self.diamonds} ♣{self.clubs}"
 
     def total_hcp(self):
         return self.spades_points + self.hearts_points + self.diamonds_points + self.clubs_points
@@ -150,15 +150,10 @@ def exhaust(iterable: Iterator):
 
 if __name__ == '__main__':
 
-    def game_hcp(h1: Hand, h2: Hand) -> bool:
-        return h1.total_hcp() + h2.total_hcp() >= 36
+    gen = generate_type("game")
+    for pair in take(gen, 10):
+        print(f"{pair[0]}\t\t\t{pair[1]}")
 
-    gen_slam = generate_rejection_sampled(game_hcp)
-    import time
-    t1 = time.time()
-    exhaust(take(gen_slam, 1000))
-    t2 = time.time()
-    print(t2 - t1)
 
 
 

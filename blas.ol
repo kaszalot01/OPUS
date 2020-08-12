@@ -34,22 +34,22 @@ not $vulnerable:
 
                     @points < 10:
                         bid 2NT
-                        # end invite
+                        end invite
 
                     @points >= 10:
 
                         # smolen
                         S >= 5 and H >= 4:
                             bid 3H
-                            # end gf
+                            end gf
                         # smolen
                         S == 4 and H >= 5:
                             bid 3S
-                            # end gf
+                            end gf
 
                         D >= 5:
                             bid 3D
-                            # end gf
+                            end gf
 
                         C >= 5:
                             bid 3C
@@ -69,29 +69,29 @@ not $vulnerable:
                     @points < 10:
                         H == 4:
                             bid  3H
-                            # end invite
+                            end invite
                         else:
                             bid 2NT
-                            # end invite
+                            end invite
 
                     # game force
                     @points >= 10:
 
                         @points >= 16 and H >= 4:
                             bid 3D  # "szlemikowe uzgodnienie H"
-                            # end slam
+                            end slam
 
                         D >= 5:
                             bid 3C
-                            # end gf
+                            end gf
 
                         C >= 5:
                             bid 2S
-                            # end gf
+                            end gf
 
                         else:
                             bid 3NT  # "pasuj popraw"
-                            # end ???
+                            end pasuj popraw
 
                 S == 4:
                     bid 2S
@@ -104,33 +104,34 @@ not $vulnerable:
 
                         S >= 4:
                             bid 3S
-                            # end invite
+                            end invite
 
                         else:
                             bid 2NT
-                            # end invite
+                            end invite
 
                     # game force
                     @points >= 10:
                         @points >= 16 and S >= 4:
                             bid 3S
-                            # end slam
+                            end slam
 
                         D >= 5:
                             bid 3D
-                            # end gf
+                            end gf
 
                         C >= 5:
                             bid 3C
-                            # end gf
+                            end gf
 
                         else:
                             bid 3NT  # do gry
-                            # end ???
+                            end pasuj popraw
 
             # transfer (teksas) RPA na piki
             S >= 6 and (S + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
                 bid 4D
+                bid 4S
 
             # transfer (teksas) RPA na kiery
             H >= 6 and (H + @points >= 14 or AK in H or AQJ in H) and @points <= 10:
@@ -247,12 +248,12 @@ not $vulnerable:
             C >= 6 and 2 * C + 0.5 * Cpoints + @points >= 29.5 and @points < 15:
                 bid 4H
                 # slam
-                # end
+                end
 
             D >= 6 and 2 * D + 0.5 * Dpoints + @points >= 29.5 and @points < 15:
                 bid 4S
                 # slam
-                # end
+                end
 
             # nie ma inwitu po 1NT - 2NT. Inwity idą przez 1NT - 2S
             D >= 5 and C >= 5 and @points != 8 and @points != 9:
@@ -265,7 +266,8 @@ not $vulnerable:
                         pass
 
                     # gameforce?
-                    # end
+                    else:
+                        end
 
                 else:
                     bid 3C
@@ -274,7 +276,8 @@ not $vulnerable:
                         pass
 
                     # gameforce?
-                    # end
+                    else:
+                        end
 
             @points == 8 or @points == 9 or C >= 6:
                 bid 2S
@@ -290,16 +293,16 @@ not $vulnerable:
             D >= 6:
                 bid 3C
                 bid 3D
-                # end
+                end
 
 
             $counts == 5431 and H == 1 and S == 3 and @points >= 10:
                 bid 3H
-                # end
+                end
 
             $counts == 5431 and H == 3 and S == 1 and @points >= 10:
                 bid 3S
-                # end
+                end
 
             H == 3 or S == 3 and @points >= 10 and $balance == 0:
                 bid 3D
@@ -307,31 +310,31 @@ not $vulnerable:
                 S >= 5 and (S > H or (H == S and Spoints >= Hpoints)):
                     bid 3S
                     # gameforce
-                    # end
+                    end
 
                 H >= 5:
                     bid 3H
                     # gameforce
-                    # end
+                    end
 
                 else:
                     bid 3NT
 
             @points >= 10 and @points <= 15:
                 bid 3NT
-                # end
+                end
 
             @points == 16 or @points == 17:
                 bid 4NT
-                # end
+                end
 
             @points == 18:
                 bid 6NT
-                # end
+                end
 
             @points == 19 or @points == 20:
                 bid 5NT
-                # end
+                end
 
             else:
                 pass

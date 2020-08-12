@@ -62,13 +62,15 @@ class BalanceAnalyzer(HandAnalyzer):
     def analyze(hand: Hand):
         counts = [hand.clubs_count, hand.diamonds_count, hand.hearts_count, hand.spades_count]
         counts.sort(reverse=True)
+
+        counts_num = int("".join(map(str, counts)))  # eg. 5332
         if counts[0] == 4 and counts[-1] > 1:
             balance = 2
         elif counts == [5, 3, 3, 2]:
             balance = 1
         else:
             balance = 0
-        return {"balance": balance}
+        return {"balance": balance, "counts": counts_num}
 
 
 class DummyDictAnalyzer(HandAnalyzer):
