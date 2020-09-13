@@ -1,0 +1,69 @@
+use balance
+
+1C {
+    @points in 12..14 and $balance >= 1
+    @points in 18..19 and $balance >= 1
+    @points in 12..21 and C >= 4
+}
+
+1NT {
+    @points in 15..17 and $balance >= 1
+
+    2C {
+        @points >= 8 and H|S == 4
+        H&S >= 4
+        @points >= 10 and H|S == 5 and H|S == 4
+
+        2D {
+            H&S >= 3
+        }
+    }
+    2D
+    2H
+}
+
+1NT - 2C {  # explicit ścieżki, czy zagnieżdżanie?
+    @points >= 8 and (H == 4 or S == 4)
+    H >= 4 and S >= 4
+    @points >= 10 and (H == 5 or S == 5) and (H == 4 or S == 4) and (H != S)  # zasługuje na własną składnię?
+    @points in 10.. and H|S == 5 and H|S == 4  # może taką?
+}
+
+1NT - 2C { # bez używania fajnych plusów
+    @points >= 8 and H|S == 4
+    H&S >= 4
+    @points >= 8 and H|S == 5 and H|S == 4
+    # ^ to jest odpowiednik @points >= 10 and (H == 5 or S == 5) and (H == 4 or S == 4) and (H != S)
+}
+
+1NT - 2C {  # alternatywna składnia długości kolorów
+    @points >= 8 and (4 hearts or 4 spades)
+    4+ hearts and 4+ spades
+    @points >= 10 and 5 hearts|spades and 4 hearts|spades
+}
+
+1NT - 2C {  # alternatywna składnia długości kolorów, wersja z symbolami
+    @points >= 8 and (4= H or 4= S)
+    4+ S and 4+ S
+    @points >= 10 and 5= H|S and 4= H|S
+
+}
+
+1NT - 4H {  # składnia na bloki arytmetyczne
+    @points < 15 and 6+ C and #[ C * 2 + 0.5 * Cpoints + @points] >= 29.5
+}
+
+1NT - 4H {  # obrzydliwa arytmetyka elegancko schowana
+    @points < 15 and 6+ C and $Cslampoints >= 29.5
+}
+
+1NT - 2C - 2D {
+    3-H and
+}
+
+# Potrzeba:
+
+- jeden z kolorów spełnia warunek: "krótkość w kolorze starszym" można oznaczać H|S <= 2
+    - wszyskie kolory spełniają warunek: "brak starszej czwórki": H&S != 4
+    - "długi kolor": C|D|H|S >= 6
+    - ewentualnie C|D|H|S zasługuje na własne słowo kluczowe - może @, ale jest to trochę niespójne
