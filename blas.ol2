@@ -1,6 +1,3 @@
-use balance
-use keycards(U)
-
 open {
 
     1C  {
@@ -73,24 +70,3 @@ open {
 
 }
 
-generic - 4NT (U) {
-    5C {
-        0= $keycards(U)
-        3= $keycards(U)
-    }
-
-    5D {
-        $keycards(U) == 1
-        $keycards(U) == 4
-    }
-
-    5H {
-        $keycards(U) == 2, Q not in U
-        $keycards(U) == 5, Q not in U
-    }
-
-    5S {
-        $keycards(U) == 2, Q in U
-        $keycards(U) == 5, Q in U
-    }
-}
