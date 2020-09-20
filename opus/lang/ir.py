@@ -178,7 +178,7 @@ class InExpr:
 
 @dataclass
 class BinaryExpr:
-    meta: Optional[Any]
+    meta: Optional[Any] = field(repr=False)
     lhs: Union[InExpr, BinaryExpr, Atom]
     op: str
     rhs: Union[InExpr, BinaryExpr, Atom]
