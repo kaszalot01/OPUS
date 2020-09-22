@@ -194,6 +194,8 @@ class BinaryExpr:
         return chain(self.lhs.children_iterator(), self.rhs.children_iterator())
 
     def __eq__(self, other):
+        if not(isinstance(other, BinaryExpr)):
+            return False
         return (self.lhs, self.op, self.rhs) == (other.lhs, other.op, other.rhs)
 
 
